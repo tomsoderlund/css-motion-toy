@@ -8,6 +8,7 @@ class App extends Component {
     return (
       <div className='App'>
         <h1>CSS Motion Toy</h1>
+        <p>Create CSS animations based on physics simulation</p>
         <Simulator />
       </div>
     )
