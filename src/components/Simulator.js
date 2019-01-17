@@ -30,6 +30,8 @@ const physicsInitialState = {
   acceleration: [0, 2, 0, 0]
 }
 
+const roundTo3decimals = value => Math.round(value * 1000) / 1000
+
 export default class Simulator extends Component {
   constructor (props) {
     super(props)
@@ -64,6 +66,7 @@ export default class Simulator extends Component {
       }
       const elapsedTime = Date.now() - this.state.timeStarted
       this.setState({ position, speed, acceleration, elapsedTime })
+      console.log(`${elapsedTime / 100}% { left: ${roundTo3decimals(position[0])}px; top: ${roundTo3decimals(position[1])}px; }`)
     }
   }
 
