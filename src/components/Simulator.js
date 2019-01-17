@@ -15,22 +15,33 @@ const SimulatorContainer = styled.div`
 
 const TheBox = styled.div`
   position: absolute;
-  width: 10em;
-  height: 5em;
+  width: 20em;
+  height: 10em;
   background-color: slateblue;
-  border-radius: 0.5em;
+  border-radius: 1em;
 `
 
 const TIMER_INTERVAL = 50
 
+const X = 0; const Y = 1; const ROTATION = 3; const OPACITY = 4
+
 const physicsInitialState = {
-  // X, Y, Z, rotation
-  position: [0, 0, 0, 0],
-  speed: [0, 0, 0, 0],
-  acceleration: [0, 2, 0, 0]
+  // X, Y, Z, rotation, opacity
+  position: [100, 0, 0, 0, 1],
+  speed: [0, 0, 0, 10, 0],
+  acceleration: [0, 2, 0, 0, 0]
 }
 
 const roundTo3decimals = value => Math.round(value * 1000) / 1000
+
+const getStyleProps = state => ({
+  left: `${roundTo3decimals(state.position[X])}px`,
+  top: `${roundTo3decimals(state.position[Y])}px`,
+  transform: `rotate(${roundTo3decimals(state.position[ROTATION])}deg)`,
+  opacity: roundTo3decimals(state.position[OPACITY])
+})
+
+const objectToCSS = obj => Object.keys(obj).reduce((result, key) => result + `${key}: ${obj[key]}; `, '')
 
 export default class Simulator extends Component {
   constructor (props) {
@@ -60,13 +71,15 @@ export default class Simulator extends Component {
         position[dim] += speed[dim]
       }
       // Bounce
-      if (position[1] > 200) {
-        speed[1] = -speed[1] * 0.9
-        position[1] = 200
+      if (position[Y] > 200) {
+        speed[Y] = -speed[Y] * 0.9
+        speed[ROTATION] = -speed[ROTATION] * 0.9
+        position[ROTATION] = position[ROTATION] * 0.9
+        position[Y] = 200
       }
       const elapsedTime = Date.now() - this.state.timeStarted
       this.setState({ position, speed, acceleration, elapsedTime })
-      console.log(`${elapsedTime / 100}% { left: ${roundTo3decimals(position[0])}px; top: ${roundTo3decimals(position[1])}px; }`)
+      console.log(`${elapsedTime / 100}% { ${objectToCSS(getStyleProps({ position, speed, acceleration }))}}`)
     }
   }
 
@@ -83,13 +96,11 @@ export default class Simulator extends Component {
   render () {
     return <Fragment>
       <SimulatorContainer>
-        <TheBox style={{
-          left: `${this.state.position[0]}px`,
-          top: `${this.state.position[1]}px`
-        }} />
+        <TheBox style={getStyleProps(this.state)} />
       </SimulatorContainer>
-      <p>Time: {this.state.isRunning ? this.state.elapsedTime : '-'}</p>
-      <button onClick={this.toggleRunning.bind(this)}>{!this.state.isRunning ? 'Start' : 'Stop'}</button>
+      <p>
+        <button onClick={this.toggleRunning.bind(this)}>{!this.state.isRunning ? 'Start' : 'Stop'}</button>
+      </p>
     </Fragment>
   }
 }
