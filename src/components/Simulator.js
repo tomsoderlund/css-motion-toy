@@ -47,7 +47,6 @@ export default class Simulator extends Component {
   }
 
   componentDidMount () {
-    console.log('xx', this.props)
     this.timer = setInterval(this.onTimerUpdate.bind(this), this.props.options.timerInterval)
   }
 

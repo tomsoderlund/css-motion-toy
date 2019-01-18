@@ -6,7 +6,6 @@ import MultiSelectButton from '../components/MultiSelectButton'
 
 const templates = {
   bounce: {
-    name: 'bounce',
     startState: {
       // X, Y, Z, rotation, opacity
       position: [150, 10, 0, 0, 1],
@@ -19,7 +18,6 @@ const templates = {
   },
 
   blackhole: {
-    name: 'blackhole',
     startState: {
       // X, Y, Z, rotation, opacity
       position: [150, 10, 0, 0, 1],
@@ -28,6 +26,18 @@ const templates = {
     },
     appliedRules: [
       { name: 'blackhole' }
+    ]
+  },
+
+  cannon: {
+    startState: {
+      // X, Y, Z, rotation, opacity
+      position: [150, 10, 0, 0, 1],
+      speed: [0, 1, 0, 0, 0],
+      acceleration: [0, 0, 0, 0, 0]
+    },
+    appliedRules: [
+      { name: 'cannon' }
     ]
   }
 }
@@ -64,7 +74,7 @@ class App extends Component {
         <p>Create CSS animations based on physics simulation</p>
         <p>
           <MultiSelectButton
-            options={['bounce', 'blackhole']}
+            options={['bounce', 'blackhole', 'cannon']}
             onSelect={this.handleSelectTemplate.bind(this)}
           />
         </p>
