@@ -2,6 +2,9 @@ import React, { Component, Fragment } from 'react'
 
 import styled from 'styled-components'
 
+import { X, Y, Z, ROTATION, OPACITY } from '../common/constants'
+import rules from '../common/rules'
+
 const SimulatorContainer = styled.div`
   position: relative;
   display: inline-block;
@@ -21,51 +24,22 @@ const TheBox = styled.div`
   border-radius: 1em;
 `
 
-const TIMER_INTERVAL = 50
-const FRICTION = 0.1
-const SKEW = true
-const X = 0; const Y = 1; const Z = 2; const ROTATION = 3; const OPACITY = 4
-
-const physicsInitialState = {
-  // X, Y, Z, rotation, opacity
-  position: [150, 10, 0, 0, 1],
-  speed: [20, 20, 0, 0, 0],
-  acceleration: [0, 0, 0, 0, 0]
-}
-
 const roundTo3decimals = value => Math.round(value * 1000) / 1000
 
-const getStyleProps = state => ({
+const getStyleProps = (state, options = {}) => ({
   left: `${roundTo3decimals(state.position[X])}px`,
   top: `${roundTo3decimals(state.position[Y])}px`,
   transform: `scale(${roundTo3decimals(1 - (state.position[Z] || 0.001) / 500)})` +
     ` rotate(${roundTo3decimals(state.position[ROTATION])}deg)` +
-    (SKEW ? ` skew(${roundTo3decimals(state.speed[X])}deg, ${roundTo3decimals(state.speed[Y])}deg)` : ''),
+    (options.skew ? ` skew(${roundTo3decimals(state.speed[X])}deg, ${roundTo3decimals(state.speed[Y])}deg)` : '') +
+    (options.stretch ? ` scale(${roundTo3decimals(1 + state.speed[X] / 40)}, ${roundTo3decimals(1 + state.speed[Y] / 40)})` : ''),
   opacity: roundTo3decimals(state.position[OPACITY])
 })
-
-const objectToCSS = obj => Object.keys(obj).reduce((result, key) => result + `${key}: ${obj[key]}; `, '')
-
-const applyRuleBounce = ({ dimension = Z, wallPosition = 250, position, speed, acceleration }) => {
-  if (position[dimension] > wallPosition) {
-    position[dimension] = wallPosition
-    speed[dimension] = -speed[dimension] * (1 - FRICTION)
-    speed[ROTATION] = -speed[ROTATION] * (1 - FRICTION)
-    position[ROTATION] = position[ROTATION] * (1 - FRICTION) // slow down to zero
-  }
-}
-
-const applyRuleBlackHole = ({ gravity = 0.01, holePosition = [150, 150], position, speed, acceleration }) => {
-  for (let dimension = X; dimension <= Z; dimension++) {
-    acceleration[dimension] = (holePosition[dimension] - position[dimension]) * gravity
-    speed[dimension] *= (1 - FRICTION / 10)
-  }
-}
 
 export default class Simulator extends Component {
   constructor (props) {
     super(props)
-    this.state = Object.assign({}, physicsInitialState, {
+    this.state = Object.assign({}, this.props.startState, {
       isRunning: false,
       timeStarted: Date.now(),
       elapsedTime: 0
@@ -73,7 +47,8 @@ export default class Simulator extends Component {
   }
 
   componentDidMount () {
-    this.timer = setInterval(this.onTimerUpdate.bind(this), TIMER_INTERVAL)
+    console.log('xx', this.props)
+    this.timer = setInterval(this.onTimerUpdate.bind(this), this.props.options.timerInterval)
   }
 
   componentWillUnmount () {
@@ -88,8 +63,9 @@ export default class Simulator extends Component {
       const acceleration = this.state.acceleration.slice()
 
       // Rules
-      // applyRuleBounce({ elapsedTime, position, speed, acceleration })
-      applyRuleBlackHole({ elapsedTime, position, speed, acceleration })
+      for (let r in this.props.appliedRules) {
+        rules[this.props.appliedRules[r].name].apply({ elapsedTime, position, speed, acceleration, options: this.props.options })
+      }
 
       // Update all dimensions
       for (let dim = 0; dim < position.length; dim++) {
@@ -97,7 +73,7 @@ export default class Simulator extends Component {
         position[dim] += speed[dim]
       }
       this.setState({ position, speed, acceleration, elapsedTime })
-      console.log(`${elapsedTime / 100}% { ${objectToCSS(getStyleProps({ position, speed, acceleration }))}}`)
+      this.props.handleOutput({ position, speed, acceleration, elapsedTime, styles: getStyleProps({ position, speed, acceleration }, this.props.options) })
     }
   }
 
@@ -106,7 +82,7 @@ export default class Simulator extends Component {
     this.setState({ isRunning })
     if (isRunning) {
       const timeStarted = Date.now()
-      const { position, speed, acceleration } = Object.assign({}, physicsInitialState)
+      const { position, speed, acceleration } = Object.assign({}, this.props.startState)
       this.setState({ position, speed, acceleration, timeStarted })
     }
   }
@@ -114,7 +90,7 @@ export default class Simulator extends Component {
   render () {
     return <Fragment>
       <SimulatorContainer>
-        <TheBox style={getStyleProps(this.state)} />
+        <TheBox style={getStyleProps(this.state, this.props.options)} />
       </SimulatorContainer>
       <p>
         <button onClick={this.toggleRunning.bind(this)}>{!this.state.isRunning ? 'Start' : 'Stop'}</button>
