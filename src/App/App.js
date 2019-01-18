@@ -1,8 +1,12 @@
 import React, { Component } from 'react'
 import './App.css'
 
+import { DIMENSION_LABELS } from '../common/constants'
 import Simulator from '../components/Simulator'
 import MultiSelectButton from '../components/MultiSelectButton'
+import ArrayInput from '../components/ArrayInput'
+
+const { set } = require('lodash')
 
 const templates = {
   bounce: {
@@ -51,11 +55,22 @@ const options = {
 
 const objectToCSS = obj => Object.keys(obj).reduce((result, key) => result + `${key}: ${obj[key]}; `, '')
 
+const VariableInputBlock = ({ startState, label, onChange }) => <p>
+  <label>{label}:</label>
+  <ArrayInput
+    values={startState[label.toLowerCase()]}
+    labels={DIMENSION_LABELS}
+    onChange={onChange}
+  />
+</p>
+
 class App extends Component {
   constructor (props) {
     super(props)
+    const currentTemplate = 'bounce'
     this.state = {
-      currentTemplate: 'bounce'
+      currentTemplate,
+      startState: templates[currentTemplate].startState
     }
   }
 
@@ -64,7 +79,13 @@ class App extends Component {
   }
 
   handleSelectTemplate (currentTemplate) {
-    this.setState({ currentTemplate })
+    this.setState({ currentTemplate, startState: templates[currentTemplate].startState })
+  }
+
+  handleChangeStartState (variable, index, event) {
+    const startState = Object.assign({}, this.state.startState)
+    set(startState, `${variable}.${index}`, parseFloat(event.target.value))
+    this.setState({ startState })
   }
 
   render () {
@@ -78,8 +99,23 @@ class App extends Component {
             onSelect={this.handleSelectTemplate.bind(this)}
           />
         </p>
+        <VariableInputBlock
+          label='Position'
+          startState={this.state.startState}
+          onChange={this.handleChangeStartState.bind(this, 'position')}
+        />
+        <VariableInputBlock
+          label='Speed'
+          startState={this.state.startState}
+          onChange={this.handleChangeStartState.bind(this, 'speed')}
+        />
+        <VariableInputBlock
+          label='Acceleration'
+          startState={this.state.startState}
+          onChange={this.handleChangeStartState.bind(this, 'acceleration')}
+        />
         <Simulator
-          startState={templates[this.state.currentTemplate].startState}
+          startState={this.state.startState}
           appliedRules={templates[this.state.currentTemplate].appliedRules}
           options={options}
           handleOutput={this.logOutput}

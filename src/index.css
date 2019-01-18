@@ -77,7 +77,6 @@ select {
   font-size: inherit;
   padding: 0.6em;
   margin: 0.2em;
-  min-width: 15em;
 }
 input::placeholder,
 textarea::placeholder {
