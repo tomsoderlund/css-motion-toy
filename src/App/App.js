@@ -2,11 +2,10 @@ import React, { Component } from 'react'
 import './App.css'
 
 import Simulator from '../components/Simulator'
+import MultiSelectButton from '../components/MultiSelectButton'
 
-const activeTemplateIndex = 0
-
-const templates = [
-  {
+const templates = {
+  bounce: {
     name: 'bounce',
     startState: {
       // X, Y, Z, rotation, opacity
@@ -19,7 +18,7 @@ const templates = [
     ]
   },
 
-  {
+  blackhole: {
     name: 'blackhole',
     startState: {
       // X, Y, Z, rotation, opacity
@@ -31,7 +30,7 @@ const templates = [
       { name: 'blackhole' }
     ]
   }
-]
+}
 
 const options = {
   skew: true,
@@ -46,7 +45,7 @@ class App extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      propName: 'this prop'
+      currentTemplate: 'bounce'
     }
   }
 
@@ -54,14 +53,24 @@ class App extends Component {
     console.log(`${elapsedTime / 100}% { ${objectToCSS(styles)}}`)
   }
 
+  handleSelectTemplate (currentTemplate) {
+    this.setState({ currentTemplate })
+  }
+
   render () {
     return (
       <div className='App'>
         <h1>CSS Motion Toy</h1>
         <p>Create CSS animations based on physics simulation</p>
+        <p>
+          <MultiSelectButton
+            options={['bounce', 'blackhole']}
+            onSelect={this.handleSelectTemplate.bind(this)}
+          />
+        </p>
         <Simulator
-          startState={templates[activeTemplateIndex].startState}
-          appliedRules={templates[activeTemplateIndex].appliedRules}
+          startState={templates[this.state.currentTemplate].startState}
+          appliedRules={templates[this.state.currentTemplate].appliedRules}
           options={options}
           handleOutput={this.logOutput}
         />
