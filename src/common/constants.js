@@ -7,5 +7,11 @@ export const OPACITY = 4
 
 export const TIME = 2
 
-export const DIMENSION_LABELS = ['X', 'Y', 'Z', 'ROTATION', 'OPACITY']
-export const OUTPUT_OPTIONS_LABELS = ['X', 'Y', 'TIME']
+export const SKEW = 0
+export const STRETCH = 1
+export const FRICTION = 2
+export const TIMER_INTERVAL = 3
+
+export const DIMENSION_LABELS = ['X', 'Y', 'Z', 'Rotation', 'Opacity']
+export const OUTPUT_OPTIONS_LABELS = ['X', 'Y', 'Time']
+export const SIMULATION_OPTIONS_LABELS = ['Skew (1/0)', 'Stretch (1/0)', 'Friction (%)', 'Timer interval (ms)']

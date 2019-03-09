@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react'
 
 import styled from 'styled-components'
 
-import { X, Y, Z, ROTATION, OPACITY, TIME } from '../common/constants'
+import { X, Y, Z, ROTATION, OPACITY, TIME, SKEW, STRETCH, TIMER_INTERVAL } from '../common/constants'
 import rules from '../common/rules'
 
 const SimulatorContainer = styled.div`
@@ -57,8 +57,8 @@ export const getStylesCSS = (stylesValues, options) => ({
   top: `${roundTo3decimals(stylesValues.top)}px`,
   transform: `scale(${roundTo3decimals(stylesValues.transformScale)})` +
     ` rotate(${roundTo3decimals(stylesValues.transformRotate)}deg)` +
-    (options.skew ? ` skew(${roundTo3decimals(stylesValues.transformSkewX)}deg, ${roundTo3decimals(stylesValues.transformSkewY)}deg)` : '') +
-    (options.stretch ? ` scale(${roundTo3decimals(stylesValues.transformStretchX)}, ${roundTo3decimals(stylesValues.transformStretchY)})` : ''),
+    (options[SKEW] ? ` skew(${roundTo3decimals(stylesValues.transformSkewX)}deg, ${roundTo3decimals(stylesValues.transformSkewY)}deg)` : '') +
+    (options[STRETCH] ? ` scale(${roundTo3decimals(stylesValues.transformStretchX)}, ${roundTo3decimals(stylesValues.transformStretchY)})` : ''),
   opacity: roundTo3decimals(stylesValues.opacity)
 })
 
@@ -73,7 +73,7 @@ export default class Simulator extends Component {
   }
 
   componentDidMount () {
-    this.timer = setInterval(this.onTimerUpdate.bind(this), this.props.options.timerInterval)
+    this.timer = setInterval(this.onTimerUpdate.bind(this), this.props.options[TIMER_INTERVAL])
   }
 
   componentWillUnmount () {

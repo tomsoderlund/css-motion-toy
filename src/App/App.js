@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import './App.css'
 
-import { DIMENSION_LABELS, OUTPUT_OPTIONS_LABELS } from '../common/constants'
+import { DIMENSION_LABELS, OUTPUT_OPTIONS_LABELS, SIMULATION_OPTIONS_LABELS } from '../common/constants'
 import Simulator, { getStylesCSS, transformStylesValues } from '../components/Simulator'
 import MultiSelectButton from '../components/MultiSelectButton'
 import ArrayInput from '../components/ArrayInput'
@@ -46,12 +46,8 @@ const templates = {
   }
 }
 
-const simulationOptions = {
-  skew: true,
-  stretch: false,
-  friction: 0.1,
-  timerInterval: 50
-}
+// skew (true/false), stretch (true/false), friction (%), timerInterval (ms)
+const defaultSimulationOptions = [1, 0, 10, 50]
 
 const defaultOutputOptions = {
   // X, Y, time
@@ -61,7 +57,7 @@ const defaultOutputOptions = {
 
 const objectToCSS = obj => Object.keys(obj).reduce((result, key) => result + `${key}: ${obj[key]}; `, '')
 
-const formatOutputCssRow = (stylesValues, outputOptions) => {
+const formatOutputCssRow = (stylesValues, outputOptions, simulationOptions) => {
   const stylesValuesTransformed = transformStylesValues(stylesValues, outputOptions, simulationOptions)
   return `${stylesValuesTransformed.elapsedTime / 100}% { ${objectToCSS(getStylesCSS(stylesValuesTransformed, simulationOptions))} }\n`
 }
@@ -83,7 +79,8 @@ class App extends Component {
       currentTemplate,
       startState: templates[currentTemplate].startState,
       output: [],
-      outputOptions: defaultOutputOptions
+      outputOptions: defaultOutputOptions,
+      simulationOptions: defaultSimulationOptions
     }
   }
 
@@ -93,7 +90,7 @@ class App extends Component {
   }
 
   renderOutput () {
-    return this.state.output.reduce((resultCSS, stylesValues) => resultCSS + formatOutputCssRow(stylesValues, this.state.outputOptions), '')
+    return this.state.output.reduce((resultCSS, stylesValues) => resultCSS + formatOutputCssRow(stylesValues, this.state.outputOptions, this.state.simulationOptions), '')
   }
 
   handleClearOutput () {
@@ -116,18 +113,36 @@ class App extends Component {
     this.setState({ outputOptions })
   }
 
+  // Array, not object
+  handleChangeSimulationOptions (index, event) {
+    const simulationOptions = this.state.simulationOptions.slice()
+    set(simulationOptions, `${index}`, parseFloat(event.target.value))
+    this.setState({ simulationOptions })
+  }
+
   render () {
     return (
       <div className='App'>
         <h1>CSS Motion Toy</h1>
         <p>Create CSS animations based on physics simulation</p>
 
+        <h3>Simulation settings</h3>
+
+        <MultiSelectButton
+          options={['bounce', 'blackhole', 'cannon']}
+          onSelect={this.handleSelectTemplate.bind(this)}
+        />
+
         <p>
-          <MultiSelectButton
-            options={['bounce', 'blackhole', 'cannon']}
-            onSelect={this.handleSelectTemplate.bind(this)}
+          <label>Settings:</label>
+          <ArrayInput
+            values={this.state.simulationOptions}
+            labels={SIMULATION_OPTIONS_LABELS}
+            onChange={this.handleChangeSimulationOptions.bind(this)}
           />
         </p>
+
+        <h3>Object start values</h3>
 
         <VariableInputBlock
           label='Position'
@@ -148,7 +163,7 @@ class App extends Component {
         <Simulator
           startState={this.state.startState}
           appliedRules={templates[this.state.currentTemplate].appliedRules}
-          options={simulationOptions}
+          options={this.state.simulationOptions}
           handleOutput={this.logOutput.bind(this)}
           handleClearOutput={this.handleClearOutput.bind(this)}
         />
