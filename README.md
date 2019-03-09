@@ -2,6 +2,8 @@
 
 Create CSS animations based on physics simulation.
 
+Demo: https://tomsoderlund.github.io/css-motion-toy/
+
 ![](docs/demo.gif)
 
 ## How to Run
