@@ -26,14 +26,27 @@ const TheBox = styled.div`
 
 const roundTo3decimals = value => Math.round(value * 1000) / 1000
 
-const getStyleProps = (state, options = {}) => ({
-  left: `${roundTo3decimals(state.position[X])}px`,
-  top: `${roundTo3decimals(state.position[Y])}px`,
-  transform: `scale(${roundTo3decimals(1 - (state.position[Z] || 0.001) / 500)})` +
-    ` rotate(${roundTo3decimals(state.position[ROTATION])}deg)` +
-    (options.skew ? ` skew(${roundTo3decimals(state.speed[X])}deg, ${roundTo3decimals(state.speed[Y])}deg)` : '') +
-    (options.stretch ? ` scale(${roundTo3decimals(1 + state.speed[X] / 40)}, ${roundTo3decimals(1 + state.speed[Y] / 40)})` : ''),
-  opacity: roundTo3decimals(state.position[OPACITY])
+const getStylesValues = (state, options = {}) => ({
+  elapsedTime: state.elapsedTime,
+  left: state.position[X],
+  top: state.position[Y],
+  transformScale: (1 - (state.position[Z] || 0.001) / 500),
+  transformRotate: state.position[ROTATION],
+  transformSkewX: state.speed[X],
+  transformSkewY: state.speed[Y],
+  transformStretchX: 1 + state.speed[X] / 40,
+  transformStretchY: 1 + state.speed[Y] / 40,
+  opacity: state.position[OPACITY]
+})
+
+export const getStylesCSS = (stylesValues, options) => ({
+  left: `${roundTo3decimals(stylesValues.left)}px`,
+  top: `${roundTo3decimals(stylesValues.top)}px`,
+  transform: `scale(${roundTo3decimals(stylesValues.transformScale)})` +
+    ` rotate(${roundTo3decimals(stylesValues.transformRotate)}deg)` +
+    (options.skew ? ` skew(${roundTo3decimals(stylesValues.transformSkewX)}deg, ${roundTo3decimals(stylesValues.transformSkewY)}deg)` : '') +
+    (options.stretch ? ` scale(${roundTo3decimals(stylesValues.transformStretchX)}, ${roundTo3decimals(stylesValues.transformStretchY)})` : ''),
+  opacity: roundTo3decimals(stylesValues.opacity)
 })
 
 export default class Simulator extends Component {
@@ -72,7 +85,8 @@ export default class Simulator extends Component {
         position[dim] += speed[dim]
       }
       this.setState({ position, speed, acceleration, elapsedTime })
-      this.props.handleOutput({ position, speed, acceleration, elapsedTime, styles: getStyleProps({ position, speed, acceleration }, this.props.options) })
+      const stylesValues = getStylesValues({ elapsedTime, position, speed, acceleration }, this.props.options)
+      this.props.handleOutput({ position, speed, acceleration, elapsedTime, stylesValues, styles: getStylesCSS(stylesValues, this.props.options) })
     }
   }
 
@@ -80,6 +94,7 @@ export default class Simulator extends Component {
     const isRunning = !this.state.isRunning
     this.setState({ isRunning })
     if (isRunning) {
+      this.props.handleClearOutput()
       const timeStarted = Date.now()
       const { position, speed, acceleration } = Object.assign({}, this.props.startState)
       this.setState({ position, speed, acceleration, timeStarted })
@@ -89,7 +104,7 @@ export default class Simulator extends Component {
   render () {
     return <Fragment>
       <SimulatorContainer>
-        <TheBox style={getStyleProps(this.state, this.props.options)} />
+        <TheBox style={getStylesCSS(getStylesValues(this.state, this.props.options), this.props.options)} />
       </SimulatorContainer>
       <p>
         <button onClick={this.toggleRunning.bind(this)}>{!this.state.isRunning ? 'Start' : 'Stop'}</button>
