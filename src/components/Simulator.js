@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react'
 
 import styled from 'styled-components'
 
-import { X, Y, Z, ROTATION, OPACITY } from '../common/constants'
+import { X, Y, Z, ROTATION, OPACITY, TIME } from '../common/constants'
 import rules from '../common/rules'
 
 const SimulatorContainer = styled.div`
@@ -37,6 +37,19 @@ const getStylesValues = (state, options = {}) => ({
   transformStretchX: 1 + state.speed[X] / 40,
   transformStretchY: 1 + state.speed[Y] / 40,
   opacity: state.position[OPACITY]
+})
+
+export const transformStylesValues = (stylesValues, outputOptions, options = {}) => ({
+  elapsedTime: stylesValues.elapsedTime * outputOptions.scale[TIME] / 100 + outputOptions.offset[TIME],
+  left: stylesValues.left * outputOptions.scale[X] / 100 + outputOptions.offset[X],
+  top: stylesValues.top * outputOptions.scale[Y] / 100 + outputOptions.offset[Y],
+  transformScale: stylesValues.transformScale,
+  transformRotate: stylesValues.transformRotate,
+  transformSkewX: stylesValues.transformSkewX,
+  transformSkewY: stylesValues.transformSkewY,
+  transformStretchX: stylesValues.transformStretchX,
+  transformStretchY: stylesValues.transformStretchY,
+  opacity: stylesValues.opacity
 })
 
 export const getStylesCSS = (stylesValues, options) => ({

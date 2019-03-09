@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
 import './App.css'
 
-import { DIMENSION_LABELS } from '../common/constants'
-import Simulator, { getStylesCSS } from '../components/Simulator'
+import { DIMENSION_LABELS, OUTPUT_OPTIONS_LABELS } from '../common/constants'
+import Simulator, { getStylesCSS, transformStylesValues } from '../components/Simulator'
 import MultiSelectButton from '../components/MultiSelectButton'
 import ArrayInput from '../components/ArrayInput'
 
@@ -46,22 +46,31 @@ const templates = {
   }
 }
 
-const options = {
+const simulationOptions = {
   skew: true,
   stretch: false,
   friction: 0.1,
   timerInterval: 50
 }
 
+const defaultOutputOptions = {
+  // X, Y, time
+  offset: [0, 0, 0],
+  scale: [100, 100, 100]
+}
+
 const objectToCSS = obj => Object.keys(obj).reduce((result, key) => result + `${key}: ${obj[key]}; `, '')
 
-const formatOutputCssRow = (stylesValues) => `${stylesValues.elapsedTime / 100}% { ${objectToCSS(getStylesCSS(stylesValues, options))} }\n`
+const formatOutputCssRow = (stylesValues, outputOptions) => {
+  const stylesValuesTransformed = transformStylesValues(stylesValues, outputOptions, simulationOptions)
+  return `${stylesValuesTransformed.elapsedTime / 100}% { ${objectToCSS(getStylesCSS(stylesValuesTransformed, simulationOptions))} }\n`
+}
 
-const VariableInputBlock = ({ startState, label, onChange }) => <p>
+const VariableInputBlock = ({ stateObject, label, onChange, labels = DIMENSION_LABELS }) => <p>
   <label>{label}:</label>
   <ArrayInput
-    values={startState[label.toLowerCase()]}
-    labels={DIMENSION_LABELS}
+    values={stateObject[label.toLowerCase()]}
+    labels={labels}
     onChange={onChange}
   />
 </p>
@@ -73,7 +82,8 @@ class App extends Component {
     this.state = {
       currentTemplate,
       startState: templates[currentTemplate].startState,
-      output: []
+      output: [],
+      outputOptions: defaultOutputOptions
     }
   }
 
@@ -83,7 +93,7 @@ class App extends Component {
   }
 
   renderOutput () {
-    return this.state.output.reduce((resultCSS, stylesValues) => resultCSS + formatOutputCssRow(stylesValues), '')
+    return this.state.output.reduce((resultCSS, stylesValues) => resultCSS + formatOutputCssRow(stylesValues, this.state.outputOptions), '')
   }
 
   handleClearOutput () {
@@ -98,6 +108,12 @@ class App extends Component {
     const startState = Object.assign({}, this.state.startState)
     set(startState, `${variable}.${index}`, parseFloat(event.target.value))
     this.setState({ startState })
+  }
+
+  handleChangeOutputOptions (variable, index, event) {
+    const outputOptions = Object.assign({}, this.state.outputOptions)
+    set(outputOptions, `${variable}.${index}`, parseFloat(event.target.value))
+    this.setState({ outputOptions })
   }
 
   render () {
@@ -115,29 +131,41 @@ class App extends Component {
 
         <VariableInputBlock
           label='Position'
-          startState={this.state.startState}
+          stateObject={this.state.startState}
           onChange={this.handleChangeStartState.bind(this, 'position')}
         />
         <VariableInputBlock
           label='Speed'
-          startState={this.state.startState}
+          stateObject={this.state.startState}
           onChange={this.handleChangeStartState.bind(this, 'speed')}
         />
         <VariableInputBlock
           label='Acceleration'
-          startState={this.state.startState}
+          stateObject={this.state.startState}
           onChange={this.handleChangeStartState.bind(this, 'acceleration')}
         />
 
         <Simulator
           startState={this.state.startState}
           appliedRules={templates[this.state.currentTemplate].appliedRules}
-          options={options}
+          options={simulationOptions}
           handleOutput={this.logOutput.bind(this)}
           handleClearOutput={this.handleClearOutput.bind(this)}
         />
 
         <h2>Output</h2>
+        <VariableInputBlock
+          label='Offset'
+          stateObject={this.state.outputOptions}
+          onChange={this.handleChangeOutputOptions.bind(this, 'offset')}
+          labels={OUTPUT_OPTIONS_LABELS}
+        />
+        <VariableInputBlock
+          label='Scale'
+          stateObject={this.state.outputOptions}
+          onChange={this.handleChangeOutputOptions.bind(this, 'scale')}
+          labels={OUTPUT_OPTIONS_LABELS}
+        />
         <textarea readOnly value={this.renderOutput()} />
 
       </div>
