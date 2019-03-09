@@ -1,75 +1,16 @@
 import React, { Component } from 'react'
+import { set } from 'lodash'
+
 import './App.css'
 
-import { DIMENSION_LABELS, OUTPUT_OPTIONS_LABELS, SIMULATION_OPTIONS_LABELS } from '../common/constants'
-import Simulator, { getStylesCSS, transformStylesValues } from '../components/Simulator'
+import { OUTPUT_OPTIONS_LABELS, SIMULATION_OPTIONS_LABELS } from '../common/constants'
+import templates from '../common/templates'
+import { defaultSimulationOptions, defaultOutputOptions } from '../common/options'
+import { formatOutputCssRow } from '../common/helpers'
+
+import Simulator from '../components/Simulator'
 import MultiSelectButton from '../components/MultiSelectButton'
-import ArrayInput from '../components/ArrayInput'
-
-const { set } = require('lodash')
-
-const templates = {
-  bounce: {
-    startState: {
-      // X, Y, Z, rotation, opacity
-      position: [150, 10, 0, 0, 1],
-      speed: [0, 0, 0, 0, 0],
-      acceleration: [0, 2, 0, 0, 0]
-    },
-    appliedRules: [
-      { name: 'bounce' }
-    ]
-  },
-
-  blackhole: {
-    startState: {
-      // X, Y, Z, rotation, opacity
-      position: [150, 10, 0, 0, 1],
-      speed: [20, 20, 0, 0, 0],
-      acceleration: [0, 0, 0, 0, 0]
-    },
-    appliedRules: [
-      { name: 'blackhole' }
-    ]
-  },
-
-  cannon: {
-    startState: {
-      // X, Y, Z, rotation, opacity
-      position: [150, 10, 0, 0, 1],
-      speed: [0, 1, 0, 0, 0],
-      acceleration: [0, 0, 0, 0, 0]
-    },
-    appliedRules: [
-      { name: 'cannon' }
-    ]
-  }
-}
-
-// skew (true/false), stretch (true/false), friction (%), timerInterval (ms)
-const defaultSimulationOptions = [1, 0, 10, 50]
-
-const defaultOutputOptions = {
-  // X, Y, time
-  offset: [0, 0, 0],
-  scale: [100, 100, 100]
-}
-
-const objectToCSS = obj => Object.keys(obj).reduce((result, key) => result + `${key}: ${obj[key]}; `, '')
-
-const formatOutputCssRow = (stylesValues, outputOptions, simulationOptions) => {
-  const stylesValuesTransformed = transformStylesValues(stylesValues, outputOptions, simulationOptions)
-  return `${stylesValuesTransformed.elapsedTime / 100}% { ${objectToCSS(getStylesCSS(stylesValuesTransformed, simulationOptions))} }\n`
-}
-
-const VariableInputBlock = ({ stateObject, label, onChange, labels = DIMENSION_LABELS }) => <p>
-  <label>{label}:</label>
-  <ArrayInput
-    values={stateObject[label.toLowerCase()]}
-    labels={labels}
-    onChange={onChange}
-  />
-</p>
+import { ArrayInput, VariableInputBlock } from '../components/ArrayInput'
 
 class App extends Component {
   constructor (props) {
