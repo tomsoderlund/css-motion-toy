@@ -1,3 +1,25 @@
-## CSS Motion Toy
+# CSS Motion Toy
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Create CSS animations based on physics simulation.
+
+![](docs/demo.gif)
+
+## How to Run
+
+	yarn start
+
+## How to Use
+
+You set up your simulation configuration, then press “Start” to start.
+
+### Simulation rules
+
+- Bounce: reverse speed when hit a wall.
+- Black hole: rotate around a position.
+- Cannon: accelerate after a certain time.
+
+### Simulation options
+
+- Skew (on/off): use transform skew based on speed.
+- Stretch (on/off): use transform scale based on speed.
+- Friction (%)
